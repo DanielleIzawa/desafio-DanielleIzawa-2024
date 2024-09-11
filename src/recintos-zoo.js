@@ -18,8 +18,44 @@ class RecintosZoo {
         };
     }
     analisaRecintos(animal, quantidade) {
+        if (!this.animais.hasOwnProperty(animal)) {
+            return { erro: 'Animal inválido' };
+        }
+
+        if (!Number.isInteger(quantidade) || quantidade <= 0) {
+            return { erro: 'Quantidade inválida' };
+        }
+    
+        const {tamanho, biomas} = this.animais[animal];
+
+    const recintosViaveis = this.recintos.filter(recinto => {
+    const espacoOcupado = recinto.animais.reduce((total, a) => total + a.quantidade * this.animais[a.especie].tamanho, 0);
+    const espacoLivre = recinto.tamanhoTotal - espacoOcupado;
+
+    if (!biomas.includes(recinto.bioma) || espacoLivre < tamanho * quantidade) {
+        return false;
     }
 
+    if (animal === 'HIPOPOTAMO' && recinto.bioma !== 'savana e rio' && recinto.animais.length > 0) {
+        return false;
+    }
+
+    if (recinto.animais.some(a => this.animais[a.especie].biomas.includes('savana') && a.especie !== animal)) {
+        return false;
+    }
+
+    if (animal === 'MACACO' && recinto.animais.length === 0 && quantidade === 1) {
+        return false;
+    }
+    return true;
+}).map(recinto => `Recinto ${recinto.numero} (espaço livre: ${recinto.tamanhoTotal - (recinto.animais.reduce((total, a) => total + a.quantidade * this.animais[a.especie].tamanho, 0) + tamanho * quantidade)} total: ${recinto.tamanhoTotal})`);
+
+if (recintosViaveis.length === 0) {
+    return { erro: "Não há recinto viável" };
+}
+
+return { recintosViaveis };
+}
 }
 
 export { RecintosZoo as RecintosZoo };
